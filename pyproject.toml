@@ -12,6 +12,7 @@ dependencies = [
     "fuzzywuzzy>=0.18.0",
     "matplotlib>=3.10.0",
     "python-dotenv>=1.0.1",
+    "python-levenshtein>=0.26.1",
     "typer>=0.15.1",
     "weave>=0.51.33",
 ]

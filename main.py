@@ -1,3 +1,4 @@
+import importlib
 import json
 import os
 from copy import deepcopy
@@ -27,7 +28,7 @@ app = typer.Typer()
 
 def get_task_module(task_name: str):
     """Dynamically import task-specific module."""
-    return dynamic_import("adapt.task", task_name)
+    return importlib.import_module(f"adapt.task.{task_name}")
 
 
 def make_optimizer(optimizer_config: dict, metric: Callable | None = None):
@@ -122,7 +123,7 @@ def evaluate_main(
     evaluate_program = Evaluate(
         metric=task_module.evaluate_pred,
         devset=examples,
-        num_threads=1,
+        num_threads=16,
         display_progress=True,
         return_outputs=True,
     )

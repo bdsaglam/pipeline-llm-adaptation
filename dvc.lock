@@ -1,0 +1,62 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python main.py train --task erx --dataset-path bdsaglam/web_nlg-erx-concat
+      --dataset-name release_v3.0_en --dataset-split train[:100] --optimizer-path
+      data/raw/optimizer-configs/noop.json --ensemble no --model llama-3-8b --temperature
+      0.0 --out data/generated/training/trained-program.json
+    deps:
+    - path: data/raw/optimizer-configs/noop.json
+      hash: md5
+      md5: 37a6259cc0c1dae299a7866489dff0bd
+      size: 4
+    - path: main.py
+      hash: md5
+      md5: f8213f07f78f55cd3ab7132ffc6f337d
+      size: 4983
+    params:
+      params.yaml:
+        lm.model: llama-3-8b
+        lm.temperature: 0.0
+        task: erx
+        train.dataset.name: release_v3.0_en
+        train.dataset.path: bdsaglam/web_nlg-erx-concat
+        train.dataset.split: train[:100]
+        train.ensemble: no
+        train.optimizer: noop
+    outs:
+    - path: data/generated/training/trained-program.json
+      hash: md5
+      md5: 98c8211510a8f221eeef19b678571ea9
+      size: 617
+  evaluate:
+    cmd: python main.py evaluate --task erx --dataset-path bdsaglam/web_nlg-erx-concat
+      --dataset-name release_v3.0_en --dataset-split dev --model llama-3-8b --temperature
+      0.0 --load-from data/generated/training/trained-program.json --out data/generated/evaluation/
+    deps:
+    - path: data/generated/training/trained-program.json
+      hash: md5
+      md5: 98c8211510a8f221eeef19b678571ea9
+      size: 617
+    - path: main.py
+      hash: md5
+      md5: f8213f07f78f55cd3ab7132ffc6f337d
+      size: 4983
+    params:
+      params.yaml:
+        evaluation.dataset.name: release_v3.0_en
+        evaluation.dataset.path: bdsaglam/web_nlg-erx-concat
+        evaluation.dataset.split: dev
+        lm.model: llama-3-8b
+        lm.temperature: 0.0
+        run: 1
+        task: erx
+    outs:
+    - path: data/generated/evaluation/results.jsonl
+      hash: md5
+      md5: 75762ec3284354a7880746dfc92dfd86
+      size: 2073921
+    - path: data/generated/evaluation/scores.json
+      hash: md5
+      md5: 16d23573fd1140e0e62aa151826ac5d0
+      size: 235
