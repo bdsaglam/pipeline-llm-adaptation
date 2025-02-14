@@ -31,8 +31,9 @@ stages:
       size: 617
   evaluate:
     cmd: python main.py evaluate --task erx --dataset-path bdsaglam/web_nlg-erx-concat
-      --dataset-name release_v3.0_en --dataset-split dev --model llama-3-8b --temperature
-      0.0 --load-from data/generated/training/trained-program.json --out data/generated/evaluation/
+      --dataset-name release_v3.0_en --dataset-split dev[:100] --model llama-3-8b
+      --temperature 0.0 --load-from data/generated/training/trained-program.json --out
+      data/generated/evaluation/
     deps:
     - path: data/generated/training/trained-program.json
       hash: md5
@@ -40,13 +41,13 @@ stages:
       size: 617
     - path: main.py
       hash: md5
-      md5: f8213f07f78f55cd3ab7132ffc6f337d
-      size: 4983
+      md5: cf95269bad4fff899014b6f7ee1769a8
+      size: 5172
     params:
       params.yaml:
         evaluation.dataset.name: release_v3.0_en
         evaluation.dataset.path: bdsaglam/web_nlg-erx-concat
-        evaluation.dataset.split: dev
+        evaluation.dataset.split: dev[:100]
         lm.model: llama-3-8b
         lm.temperature: 0.0
         run: 1
@@ -54,9 +55,9 @@ stages:
     outs:
     - path: data/generated/evaluation/results.jsonl
       hash: md5
-      md5: 75762ec3284354a7880746dfc92dfd86
-      size: 2073921
+      md5: 4c4216752bcb2fafc7478ab2c8d2e108
+      size: 177320
     - path: data/generated/evaluation/scores.json
       hash: md5
-      md5: 16d23573fd1140e0e62aa151826ac5d0
+      md5: 9094f4854584e9ca4c809fd14c42dcaa
       size: 235
