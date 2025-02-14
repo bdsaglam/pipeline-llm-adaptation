@@ -13,6 +13,7 @@ from dspy.evaluate import Evaluate
 from dspy.teleprompt.ensemble import Ensemble
 from rich.console import Console
 
+from adapt.dspy.tgi_json_adapter import TGIJSONAdapter
 from adapt.utils import configure_lm, dynamic_import, set_seed
 
 print = Console(stderr=True).print
@@ -22,6 +23,9 @@ load_dotenv()
 set_seed(89)
 
 weave.init(project_name="llm-adapt-dspy")
+
+
+dspy.settings.adapter = TGIJSONAdapter()
 
 app = typer.Typer()
 
@@ -100,6 +104,7 @@ def evaluate_main(
     temperature: float = typer.Option(..., help="Temperature parameter for the model"),
     load_from: str = typer.Option(default="UNSET", help="Path to a saved model to load"),
     out: Path = typer.Option(..., help="Output directory for generated results"),
+    num_threads: int = typer.Option(default=16, help="Number of threads to use"),
 ):
     out.mkdir(parents=True, exist_ok=True)
 
@@ -123,7 +128,7 @@ def evaluate_main(
     evaluate_program = Evaluate(
         metric=task_module.evaluate_pred,
         devset=examples,
-        num_threads=16,
+        num_threads=num_threads,
         display_progress=True,
         return_outputs=True,
     )
