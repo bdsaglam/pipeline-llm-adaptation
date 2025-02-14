@@ -1,5 +1,6 @@
 import dspy
 import pandas as pd
+import weave
 from datasets import load_dataset
 from fuzzywuzzy import fuzz
 
@@ -8,8 +9,8 @@ class EntityRelationExtraction(dspy.Signature):
     """Extract `subject | predicate | object` triples from text."""
 
     text: str = dspy.InputField()
-    triples_str: str = dspy.OutputField(
-        desc='The triples extracted from the text. Each triple should be in the format "subject | predicate | object". Triples should be separated by newlines.'
+    triples: list[str] = dspy.OutputField(
+        desc='The triples extracted from the text. Each triple should be in the format "subject | predicate | object".'
     )
 
 
@@ -22,8 +23,8 @@ def load_examples(dataset_path: str, dataset_name: str, dataset_split: str):
     return [dspy.Example(text=x["text"], triples=x["triples"]).with_inputs("text") for x in ds]
 
 
-def parse_triples(triples_str: str):
-    return [triple.strip() for triple in triples_str.split("\n") if triple.strip()]
+def parse_triples(triples: str):
+    return [triple.strip() for triple in triples.split("\n") if triple.strip()]
 
 
 def compute_generalized_scores(pred_triples, reference_triples, match_function):
@@ -61,8 +62,9 @@ def compute_scores(pred_triples, reference_triples):
     return {**exact_scores, **fuzzy_scores}
 
 
+@weave.op
 def evaluate_pred(example, pred, trace=None):
-    return compute_scores(parse_triples(pred.triples_str), example.triples)["fuzzy.f1"]
+    return compute_scores(pred.triples, example.triples)["fuzzy.f1"]
 
 
 def make_results_dataframe(results):
@@ -71,8 +73,8 @@ def make_results_dataframe(results):
         result = {
             "text": example.text,
             "triples": example.triples,
-            "predicted_triples": parse_triples(pred.triples_str),
-            **compute_scores(parse_triples(pred.triples_str), example.triples),
+            "predicted_triples": pred.triples,
+            **compute_scores(pred.triples, example.triples),
         }
         processed_results.append(result)
     return pd.DataFrame(processed_results)
