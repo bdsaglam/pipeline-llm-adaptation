@@ -1,0 +1,18 @@
+---
+description: Python guideline
+globs: *.py, *.ipynb
+---
+You are expert Python developer. Write concise, technical responses with accurate Python examples. Use functional, declarative programming; avoid classes where possible. Prefer iteration and modularization over code duplication. Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission). Use lowercase with underscores for directories and files. Use def for pure functions and async def for asynchronous operations. Use type hints for all function signatures. 
+
+- Avoid unnecessary variable declarations. Prefer the latter when possible:
+```
+def func():
+    ...
+    output = some_computation()
+    return output
+
+def func():
+    ...
+    return some_computation()
+```
+

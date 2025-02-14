@@ -1,14 +1,19 @@
 [project]
-name = "llm-adaptation"
+name = "adapt"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "datasets>=3.2.0",
+    "dspy>=2.6.3",
     "dvc>=3.59.0",
     "dvc-s3>=3.2.0",
+    "fuzzywuzzy>=0.18.0",
+    "matplotlib>=3.10.0",
     "python-dotenv>=1.0.1",
     "typer>=0.15.1",
+    "weave>=0.51.33",
 ]
 
 [dependency-groups]

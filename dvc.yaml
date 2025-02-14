@@ -1,1 +1,54 @@
-stages: 
+stages:
+  train:
+    cmd: >-
+      python main.py train
+      --task ${task}
+      --dataset-path ${train.dataset.path}
+      --dataset-name ${train.dataset.name}
+      --dataset-split ${train.dataset.split}
+      --optimizer-path data/raw/optimizer-configs/${train.optimizer}.json
+      --ensemble ${train.ensemble}
+      --model ${lm.model}
+      --temperature ${lm.temperature}
+      --out data/generated/training/trained-program.json
+    deps:
+      - main.py
+      - data/raw/optimizer-configs/${train.optimizer}.json
+    outs:
+      - data/generated/training/trained-program.json
+    params:
+      - task
+      - train.dataset.path
+      - train.dataset.name
+      - train.dataset.split
+      - train.optimizer
+      - train.ensemble
+      - lm.model
+      - lm.temperature
+
+  evaluate:
+    cmd: >-
+      python main.py evaluate
+      --task ${task}
+      --dataset-path ${evaluation.dataset.path}
+      --dataset-name ${evaluation.dataset.name}
+      --dataset-split ${evaluation.dataset.split}
+      --model ${lm.model}
+      --temperature ${lm.temperature}
+      --load-from data/generated/training/trained-program.json
+      --out data/generated/evaluation/
+    deps:
+      - main.py
+      - data/generated/training/trained-program.json
+    outs:
+      - data/generated/evaluation/results.jsonl
+    metrics:
+      - data/generated/evaluation/scores.json
+    params:
+      - task
+      - evaluation.dataset.path
+      - evaluation.dataset.name
+      - evaluation.dataset.split
+      - lm.model
+      - lm.temperature
+      - run

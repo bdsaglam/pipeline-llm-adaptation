@@ -1,2 +1,21 @@
-default:
-  seed: 42 
+task: erx
+
+train:
+  dataset:
+    path: bdsaglam/web_nlg-erx-concat
+    name: release_v3.0_en
+    split: train[:100]
+  optimizer: noop
+  ensemble: no
+
+evaluation:
+  dataset:
+    path: bdsaglam/web_nlg-erx-concat
+    name: release_v3.0_en
+    split: dev
+
+lm:
+  model: llama-3-8b
+  temperature: 0.0
+
+run: 1
