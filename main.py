@@ -13,7 +13,6 @@ from dspy.evaluate import Evaluate
 from dspy.teleprompt.ensemble import Ensemble
 from rich.console import Console
 
-from adapt.dspy.tgi_json_adapter import TGIJSONAdapter
 from adapt.utils import configure_lm, dynamic_import, set_seed
 
 print = Console(stderr=True).print
@@ -22,10 +21,8 @@ load_dotenv()
 
 set_seed(89)
 
-weave.init(project_name="llm-adapt-dspy")
+weave.init(project_name="llm-adapt")
 
-
-dspy.settings.adapter = TGIJSONAdapter()
 
 app = typer.Typer()
 
@@ -49,6 +46,7 @@ def train_main(
     dataset_path: str = typer.Option(..., help="Path to the dataset"),
     dataset_name: str = typer.Option(..., help="Name of the dataset"),
     dataset_split: str = typer.Option(..., help="Dataset split to use (e.g., 'train', 'validation')"),
+    prompting: str = typer.Option(..., help="Prompting strategy to use"),
     model: str = typer.Option(..., help="Name of the model to use"),
     temperature: float = typer.Option(..., help="Temperature parameter for the model"),
     load_from: str = typer.Option(default="UNSET", help="Path to a saved model to load"),
@@ -69,7 +67,7 @@ def train_main(
     print(f"Loaded {len(examples)} examples")
 
     # Create the program
-    program = task_module.make_program()
+    program = task_module.make_program(prompting)
     if load_from and load_from != "UNSET":
         print(f"Loading model from {load_from}")
         program.load(load_from)
@@ -100,6 +98,7 @@ def evaluate_main(
     dataset_path: str = typer.Option(..., help="Path to the dataset"),
     dataset_name: str = typer.Option(..., help="Name of the dataset"),
     dataset_split: str = typer.Option(..., help="Dataset split to use (e.g., 'train', 'validation')"),
+    prompting: str = typer.Option(..., help="Prompting strategy to use"),
     model: str = typer.Option(..., help="Name of the model to use"),
     temperature: float = typer.Option(..., help="Temperature parameter for the model"),
     load_from: str = typer.Option(default="UNSET", help="Path to a saved model to load"),
@@ -119,7 +118,7 @@ def evaluate_main(
     print(f"Loaded {len(examples)} examples")
 
     # Create the program
-    program = task_module.make_program()
+    program = task_module.make_program(prompting)
     if load_from and load_from != "UNSET":
         print(f"Loading model from {load_from}")
         program.load(load_from)

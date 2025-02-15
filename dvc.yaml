@@ -8,6 +8,7 @@ stages:
       --dataset-split ${train.dataset.split}
       --optimizer-path data/raw/optimizer-configs/${train.optimizer}.json
       --ensemble ${train.ensemble}
+      --prompting ${program.prompting}
       --model ${lm.model}
       --temperature ${lm.temperature}
       --out data/generated/training/trained-program.json
@@ -23,6 +24,7 @@ stages:
       - train.dataset.split
       - train.optimizer
       - train.ensemble
+      - program.prompting
       - lm.model
       - lm.temperature
 
@@ -33,6 +35,7 @@ stages:
       --dataset-path ${evaluation.dataset.path}
       --dataset-name ${evaluation.dataset.name}
       --dataset-split ${evaluation.dataset.split}
+      --prompting ${program.prompting}
       --model ${lm.model}
       --temperature ${lm.temperature}
       --load-from data/generated/training/trained-program.json
@@ -49,6 +52,7 @@ stages:
       - evaluation.dataset.path
       - evaluation.dataset.name
       - evaluation.dataset.split
+      - program.prompting
       - lm.model
       - lm.temperature
       - run

@@ -1,8 +1,16 @@
+import os
+import re
+
 import dspy
 import pandas as pd
 import weave
 from datasets import load_dataset
+from dspy.primitives.prediction import Prediction
 from fuzzywuzzy import fuzz
+
+
+def parse_triples(completion: str):
+    return [triple.strip() for triple in completion.split("\n") if triple.strip()]
 
 
 class EntityRelationExtraction(dspy.Signature):
@@ -14,17 +22,46 @@ class EntityRelationExtraction(dspy.Signature):
     )
 
 
-def make_program():
-    return dspy.Predict(EntityRelationExtraction)
+class SFTPredict:
+    def __init__(self):
+        self.lm = None
+
+    def set_lm(self, lm):
+        self.lm = lm
+
+    def get_lm(self):
+        return self.lm
+
+    def load(self, path):
+        pass
+
+    def __call__(self, **kwargs):
+        text = kwargs.pop("text")
+        lm = kwargs.pop("lm", self.lm) or dspy.settings.lm
+        messages = [
+            {"role": "user", "content": text},
+        ]
+        responses = lm(messages=messages)
+        triples = parse_triples(responses[0])
+        return Prediction(triples=triples)
+
+
+def make_program(prompting: str):
+    if prompting == "structured":
+        if re.findall("localhost|127.0.0.1|0.0.0.0", os.getenv("OPENAI_BASE_URL", "")):
+            from adapt.dspy.tgi_json_adapter import TGIJSONAdapter
+
+            dspy.settings.adapter = TGIJSONAdapter()
+        return dspy.Predict(EntityRelationExtraction)
+    elif prompting == "sft":
+        return SFTPredict()
+    else:
+        raise ValueError(f"Invalid prompting strategy: {prompting}")
 
 
 def load_examples(dataset_path: str, dataset_name: str, dataset_split: str):
     ds = load_dataset(dataset_path, dataset_name, split=dataset_split)
     return [dspy.Example(text=x["text"], triples=x["triples"]).with_inputs("text") for x in ds]
-
-
-def parse_triples(triples: str):
-    return [triple.strip() for triple in triples.split("\n") if triple.strip()]
 
 
 def compute_generalized_scores(pred_triples, reference_triples, match_function):

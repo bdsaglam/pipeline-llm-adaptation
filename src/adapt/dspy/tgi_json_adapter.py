@@ -39,6 +39,8 @@ class TGIJSONAdapter(Adapter):
             params = litellm.get_supported_openai_params(model=lm.model, custom_llm_provider=provider)
             if params and "response_format" in params:
                 try:
+                    # The original JSONAdapter in dspy sets response_format as the Pydantic model, which is not supported
+                    # by HuggingFace Text Generation Inference.
                     response_model = _get_structured_outputs_response_format(signature)
                     response_format = {"type": "json_object", "value": response_model.model_json_schema()}
                     outputs = lm(**inputs, **lm_kwargs, response_format=response_format)
