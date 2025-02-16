@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -31,6 +32,10 @@ class SFTPredict:
 
     def get_lm(self):
         return self.lm
+
+    def save(self, path):
+        with open(path, "w") as f:
+            json.dump(None, f)
 
     def load(self, path):
         pass
