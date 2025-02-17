@@ -1,0 +1,66 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Evaluate ERX",
+            "type": "debugpy",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "evaluate",
+                "--task", "erx",
+                "--dataset-path", "bdsaglam/web_nlg-erx-concat",
+                "--dataset-name", "release_v3.0_en",
+                "--dataset-split", "dev[:10]",
+                "--prompting", "structured",
+                "--model", "llama-3-8b",
+                "--temperature", "0.0",
+                "--out", "./tmp/erx-structured",
+                "--num-threads", "1"
+            ]
+        },
+        {
+            "name": "Evaluate SFT-ERX",
+            "type": "debugpy",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "evaluate",
+                "--task", "erx",
+                "--dataset-path", "bdsaglam/web_nlg-erx-concat",
+                "--dataset-name", "release_v3.0_en",
+                "--dataset-split", "dev[:10]",
+                "--prompting", "sft",
+                "--model", "llama-3-8b",
+                "--temperature", "0.0",
+                "--out", "./tmp/erx-sft",
+                "--num-threads", "1"
+            ]
+        },
+        {
+            "name": "Compare ERX Results",
+            "type": "debugpy",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "scripts/erx_arena.py",
+            "console": "integratedTerminal",
+            "env": {
+                "OPENAI_BASE_URL": "http://0.0.0.0:8032/v1",
+                "OPENAI_API_KEY": "_"
+            },
+            "args": [
+                "compare",
+                "./tmp/erx-results/",
+                "--out", "./tmp/erx-arena/comparisons/",
+                "--sample", "0.01"
+            ]
+        }
+    ]
+}

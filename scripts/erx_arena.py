@@ -6,6 +6,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Set
 
+import numpy as np
 import pandas as pd
 import typer
 from dotenv import load_dotenv
@@ -18,6 +19,14 @@ tqdm.pandas()
 load_dotenv()
 
 app = typer.Typer()
+
+def set_seed(seed):
+    np.random.seed(seed % (2**32 - 1))
+    random.seed(seed)
+
+
+SEED = 89
+set_seed(SEED)
 
 
 def jprint(obj):
@@ -130,14 +139,14 @@ def compute_stats(df):
     return df["decision"].value_counts().to_dict()
 
 
-def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, sample_frac=1.0):
+def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, sample=1.0):
     exp_A = Path(file_a).stem.replace("results-", "")
     exp_B = Path(file_b).stem.replace("results-", "")
 
     df_a = pd.read_json(file_a, lines=True)
     df_b = pd.read_json(file_b, lines=True)
 
-    comp_df = pd.merge(df_a, df_b, on="text", how="inner", suffixes=["_A", "_B"]).sample(frac=sample_frac)[
+    comp_df = pd.merge(df_a, df_b, on="text", how="inner", suffixes=["_A", "_B"]).sample(frac=sample)[
         ["text", "predicted_triples_A", "predicted_triples_B"]
     ]
 
@@ -169,7 +178,7 @@ def compare(
     input_path: str = typer.Argument(..., help="Path to directory containing result files"),
     pattern: str = typer.Option("*.jsonl", help="Glob pattern for result files"),
     out: str = typer.Option("comparisons", help="Directory to save comparison results"),
-    sample_frac: float = typer.Option(1.0, "--sample-frac", "-s", help="Fraction of data to sample"),
+    sample: float = typer.Option(1.0, "--sample", "-s", help="Fraction of data to sample"),
     model: str = typer.Option("qwen-2.5-32b", "--model", "-m", help="Model to use"),
     temperature: float = typer.Option(0.3, "--temperature", "-t", help="Temperature for sampling"),
 ):
@@ -184,7 +193,7 @@ def compare(
     # Compare all pairs
     for file_a, file_b in tqdm(list(itertools.combinations(files, 2))):
         print(f"\nComparing {file_a.stem} vs {file_b.stem}")
-        compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample_frac=sample_frac)
+        compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample)
 
 
 @app.command()

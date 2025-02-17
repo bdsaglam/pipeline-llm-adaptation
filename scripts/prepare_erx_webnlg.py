@@ -14,11 +14,6 @@ load_dotenv()
 app = typer.Typer()
 
 
-def split_camel_case(input_str):
-    matches = re.finditer(".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", input_str)
-    return [m.group(0) for m in matches]
-
-
 def set_seed(seed):
     np.random.seed(seed % (2**32 - 1))
     random.seed(seed)
@@ -26,6 +21,11 @@ def set_seed(seed):
 
 SEED = 89
 set_seed(SEED)
+
+
+def split_camel_case(input_str):
+    matches = re.finditer(".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", input_str)
+    return [m.group(0) for m in matches]
 
 
 def _transform_relation(relation: str):
