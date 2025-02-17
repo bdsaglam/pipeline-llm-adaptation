@@ -64,25 +64,39 @@ class Result(BaseModel):
 SCHEMA = Result.model_json_schema()
 
 SYSTEM_PROMPT = """
-Compare the triples in the form of `subject | relation | object` extracted by different joint entity relation extraction models from the text given below. 
-- The triple set extracted by the model is good if it is complete, correct, consistent with the text and does not contain duplicate triples. 
-- Priority: Completeness > Correctness > Consistency > No duplicates
+Evaluate and compare two sets of extracted triples (`subject | relation | object`) from the given text. Each set was produced by a different joint entity relation extraction model. Assess them based on the following ranked criteria:
 
-# Text
-{text}
+1. **Completeness** – Does the set capture all explicitly or unambiguously stated relationships?  
+2. **Correctness** – Are all triples factually accurate, with correct entities, relations, and directionality?  
+3. **Consistency with Text** – Do the triples strictly align with the text without adding assumptions?  
+4. **Precision vs. Overgeneration** – Does the set avoid extracting unnecessary, vague, or incorrect triples?  
+5. **No Redundancy** – Are there no duplicate or near-duplicate triples?  
+6. **Informative Representation** – Are the triples concise yet meaningful, capturing the right level of detail?  
 
-# A
-{triples_a}
+### Evaluation Steps:  
+- **Completeness Check**: Identify any missing key relationships.  
+- **Error Detection**: Spot incorrect entities, relations, or order.  
+- **Faithfulness**: Ensure no hallucinated or misinterpreted triples.  
+- **Conciseness**: Highlight redundancy or excessive generalization.  
+- **Final Verdict**: Compare both sets and determine which is better.  
+  - If one set is significantly better, declare it the winner.  
+  - If both sets perform similarly with only trivial differences, **declare a DRAW** instead of forcing a winner.  
 
-# B
-{triples_b}
+# Text:  
+{text}  
 
-Output the result in the following JSON format:
-{schema}
+# Model A Triples:  
+{triples_a}  
+
+# Model B Triples:  
+{triples_b}  
+
+Output your structured comparison in the following JSON format:  
+{schema}  
 """
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=3))
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=3), reraise=True)
 def compare_triples_with_llm(text, triples_a, triples_b, model: str, temperature=0.3):
     response = client.chat.completions.create(
         model=model,
@@ -272,6 +286,7 @@ def leaderboard(
         columns=["Model", "Score"],
     )
     leaderboard_df.to_csv(out, index=False)
+    leaderboard_df.to_json(out.with_suffix(".json"), orient="records")
 
 
 if __name__ == "__main__":
