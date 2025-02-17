@@ -16,3 +16,4 @@ def func():
     return some_computation()
 ```
 
+- Use typer for scripts.
