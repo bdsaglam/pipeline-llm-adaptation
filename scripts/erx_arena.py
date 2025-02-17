@@ -12,6 +12,7 @@ import typer
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field, ValidationError
+from tenacity import retry, stop_after_attempt, wait_exponential
 from tqdm import tqdm
 
 tqdm.pandas()
@@ -34,7 +35,7 @@ def jprint(obj):
     print(json.dumps(obj, indent=2))
 
 
-client = OpenAI()
+client = OpenAI(max_retries=3)
 
 
 def silent(exception_class=Exception):
@@ -81,6 +82,7 @@ Output the result in the following JSON format:
 """
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=3))
 def compare_triples_with_llm(text, triples_a, triples_b, model: str, temperature=0.3):
     response = client.chat.completions.create(
         model=model,
@@ -119,7 +121,7 @@ def process(row, model: str, temperature=0.3):
         temperature=temperature,
         flip=random.random() < 0.5,
     )
-    return {**row, **result}
+    return {**row, **(result or {})}
 
 
 def process_dataframe(dataf, model: str, temperature=0.3, num_threads=16):
@@ -140,24 +142,38 @@ def compute_stats(df):
     return df["decision"].value_counts().to_dict()
 
 
-def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, sample: int | None = None):
+def compare_pair(
+    file_a,
+    file_b,
+    output_dir: Path,
+    model: str,
+    temperature=0.3,
+    sample: int | None = None,
+    force: bool = False,
+):
     exp_A = Path(file_a).stem.replace("results-", "")
     exp_B = Path(file_b).stem.replace("results-", "")
 
+    # Check if comparison already exists
+    stats_path = output_dir / f"stats_{exp_A}_vs_{exp_B}_{model}_{temperature}.json"
+    if not force and stats_path.exists():
+        print(f"Comparison between {exp_A} and {exp_B} with {model} (temp={temperature}) already exists. Skipping...")
+        return
+
+    # Load the dataframes
     df_a = pd.read_json(file_a, lines=True)
     df_b = pd.read_json(file_b, lines=True)
-
     comp_df = pd.merge(df_a, df_b, on="text", how="inner", suffixes=["_A", "_B"])[
         ["text", "predicted_triples_A", "predicted_triples_B"]
     ]
-
     if sample is not None:
         comp_df = comp_df.sample(n=sample)
 
+    # Process the dataframe
     comp_df = process_dataframe(comp_df, model=model, temperature=temperature)
 
     # Save intermediate results
-    output_path = output_dir / f"comparison_{exp_A}_vs_{exp_B}.jsonl"
+    output_path = output_dir / f"comparison_{exp_A}_vs_{exp_B}_{model}_{temperature}.jsonl"
     comp_df.to_json(output_path, orient="records", lines=True)
 
     # Save stats
@@ -170,11 +186,8 @@ def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, 
         "sample_size": len(comp_df),
         "stats": stats,
     }
-    stats_path = output_dir / f"stats_{exp_A}_vs_{exp_B}.json"
     with open(stats_path, "w") as f:
         json.dump(stats_with_meta, f, indent=2)
-
-    return stats
 
 
 @app.command()
@@ -185,6 +198,7 @@ def compare(
     sample: int | None = typer.Option(None, "--sample", "-s", help="Number of samples to sample"),
     model: str = typer.Option("qwen-2.5-32b", "--model", "-m", help="Model to use"),
     temperature: float = typer.Option(0.3, "--temperature", "-t", help="Temperature for sampling"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force recomputation of existing comparisons"),
 ):
     input_path = Path(input_path)
     out = Path(out)
@@ -197,7 +211,7 @@ def compare(
     # Compare all pairs
     for file_a, file_b in tqdm(list(itertools.combinations(files, 2))):
         print(f"\nComparing {file_a.stem} vs {file_b.stem}")
-        compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample)
+        compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample, force=force)
 
 
 @app.command()
@@ -208,7 +222,7 @@ def leaderboard(
     comparisons_dir = Path(comparisons_dir)
 
     # Load all stats files
-    stats_files = list(comparisons_dir.glob("stats_*.json"))
+    stats_files = list(comparisons_dir.glob("**/stats_*.json"))
     all_results = []
     for stats_file in stats_files:
         with open(stats_file) as f:
