@@ -228,16 +228,21 @@ def leaderboard(
         model_b = result["model_b"]
         sample_size = result["sample_size"]
 
-        if "wins" in stats:
-            scores[model_a] += stats["wins"] * sample_size
-            scores[model_b] += stats["losses"] * sample_size
-            total_samples[model_a] += sample_size
-            total_samples[model_b] += sample_size
-        elif "model_a_wins" in stats:
-            scores[model_a] += stats["model_a_wins"] * sample_size
-            scores[model_b] += stats["model_b_wins"] * sample_size
-            total_samples[model_a] += sample_size
-            total_samples[model_b] += sample_size
+        # Handle A/B/DRAW format
+        a_wins = stats.get("A", 0)
+        b_wins = stats.get("B", 0)
+        draws = stats.get("DRAW", 0)
+
+        # Add scores
+        scores[model_a] += a_wins
+        scores[model_b] += b_wins
+        # Each model gets 0.5 points for a draw
+        scores[model_a] += draws * 0.5
+        scores[model_b] += draws * 0.5
+
+        # Update total samples
+        total_samples[model_a] += sample_size
+        total_samples[model_b] += sample_size
 
     # Calculate weighted average scores
     weighted_scores = {

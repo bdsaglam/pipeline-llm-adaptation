@@ -59,7 +59,7 @@
                 "compare",
                 "./tmp/erx-results/",
                 "--out", "./tmp/erx-arena/comparisons/",
-                "--sample", "5"
+                "--sample", "100"
             ]
         }
     ]
