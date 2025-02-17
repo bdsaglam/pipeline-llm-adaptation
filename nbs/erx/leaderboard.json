@@ -1,6 +1,18 @@
-{
-    "lathy-jaws": 0.8,
-    "gawsy-paps": 0.7,
-    "spicy-teff": 0.4,
-    "moral-prof": 0.36666666666666664
-}
+[
+    {
+        "name": "gawsy-paps",
+        "score": 0.645
+    },
+    {
+        "name": "moral-prof",
+        "score": 0.4716666667
+    },
+    {
+        "name": "spicy-teff",
+        "score": 0.455
+    },
+    {
+        "name": "lathy-jaws",
+        "score": 0.42
+    }
+]

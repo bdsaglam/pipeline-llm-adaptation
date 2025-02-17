@@ -168,8 +168,11 @@ def compare_pair(
     exp_A = Path(file_a).stem.replace("results-", "")
     exp_B = Path(file_b).stem.replace("results-", "")
 
+    judge_dir = output_dir / f"{model}_{temperature}".replace(".", "_")
+    judge_dir.mkdir(exist_ok=True, parents=True)
+
     # Check if comparison already exists
-    stats_path = output_dir / f"stats_{exp_A}_vs_{exp_B}_{model}_{temperature}.json"
+    stats_path = judge_dir / f"stats_{exp_A}_vs_{exp_B}.json"
     if not force and stats_path.exists():
         print(f"Comparison between {exp_A} and {exp_B} with {model} (temp={temperature}) already exists. Skipping...")
         return
@@ -187,7 +190,7 @@ def compare_pair(
     comp_df = process_dataframe(comp_df, model=model, temperature=temperature)
 
     # Save intermediate results
-    output_path = output_dir / f"comparison_{exp_A}_vs_{exp_B}_{model}_{temperature}.jsonl"
+    output_path = judge_dir / f"comparison_{exp_A}_vs_{exp_B}_{model}_{temperature}.jsonl"
     comp_df.to_json(output_path, orient="records", lines=True)
 
     # Save stats
@@ -283,7 +286,7 @@ def leaderboard(
 
     leaderboard_df = pd.DataFrame(
         sorted(weighted_scores.items(), key=lambda x: x[1], reverse=True),
-        columns=["Model", "Score"],
+        columns=["name", "score"],
     )
     leaderboard_df.to_csv(out, index=False)
     leaderboard_df.to_json(out.with_suffix(".json"), orient="records")

@@ -57,9 +57,9 @@
             },
             "args": [
                 "compare",
-                "./tmp/erx-results/",
+                "./tmp/erx-results-debug/",
                 "--out", "./tmp/erx-arena/comparisons/",
-                "--sample", "100"
+                "--sample", "10"
             ]
         }
     ]
