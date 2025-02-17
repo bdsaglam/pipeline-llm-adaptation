@@ -20,6 +20,7 @@ load_dotenv()
 
 app = typer.Typer()
 
+
 def set_seed(seed):
     np.random.seed(seed % (2**32 - 1))
     random.seed(seed)
@@ -139,16 +140,19 @@ def compute_stats(df):
     return df["decision"].value_counts().to_dict()
 
 
-def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, sample=1.0):
+def compare_pair(file_a, file_b, output_dir: Path, model: str, temperature=0.3, sample: int | None = None):
     exp_A = Path(file_a).stem.replace("results-", "")
     exp_B = Path(file_b).stem.replace("results-", "")
 
     df_a = pd.read_json(file_a, lines=True)
     df_b = pd.read_json(file_b, lines=True)
 
-    comp_df = pd.merge(df_a, df_b, on="text", how="inner", suffixes=["_A", "_B"]).sample(frac=sample)[
+    comp_df = pd.merge(df_a, df_b, on="text", how="inner", suffixes=["_A", "_B"])[
         ["text", "predicted_triples_A", "predicted_triples_B"]
     ]
+
+    if sample is not None:
+        comp_df = comp_df.sample(n=sample)
 
     comp_df = process_dataframe(comp_df, model=model, temperature=temperature)
 
@@ -178,7 +182,7 @@ def compare(
     input_path: str = typer.Argument(..., help="Path to directory containing result files"),
     pattern: str = typer.Option("*.jsonl", help="Glob pattern for result files"),
     out: str = typer.Option("comparisons", help="Directory to save comparison results"),
-    sample: float = typer.Option(1.0, "--sample", "-s", help="Fraction of data to sample"),
+    sample: int | None = typer.Option(None, "--sample", "-s", help="Number of samples to sample"),
     model: str = typer.Option("qwen-2.5-32b", "--model", "-m", help="Model to use"),
     temperature: float = typer.Option(0.3, "--temperature", "-t", help="Temperature for sampling"),
 ):
