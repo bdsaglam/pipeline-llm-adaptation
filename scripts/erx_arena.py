@@ -246,7 +246,7 @@ def leaderboard(
 
     # Sort and save leaderboard
     out = Path(out)
-    out.mkdir(exist_ok=True, parents=True)
+    out.parent.mkdir(exist_ok=True, parents=True)
 
     leaderboard_df = pd.DataFrame(
         sorted(weighted_scores.items(), key=lambda x: x[1], reverse=True),
