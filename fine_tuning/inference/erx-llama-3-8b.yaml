@@ -1,0 +1,5 @@
+model_name_or_path: meta-llama/Meta-Llama-3-8B-Instruct
+adapter_name_or_path: fine_tuning/saves/erx-llama-3-8b-low
+template: llama3
+infer_backend: huggingface
+trust_remote_code: true
