@@ -17,7 +17,6 @@ dependencies = [
     { name = "dvc" },
     { name = "dvc-s3" },
     { name = "fuzzywuzzy" },
-    { name = "matplotlib" },
     { name = "python-dotenv" },
     { name = "python-levenshtein" },
     { name = "typer" },
@@ -27,6 +26,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "jupyter" },
+    { name = "matplotlib" },
     { name = "ruff" },
     { name = "seaborn" },
 ]
@@ -38,7 +38,6 @@ requires-dist = [
     { name = "dvc", specifier = ">=3.59.0" },
     { name = "dvc-s3", specifier = ">=3.2.0" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0" },
-    { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "python-levenshtein", specifier = ">=0.26.1" },
     { name = "typer", specifier = ">=0.15.1" },
@@ -48,6 +47,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "jupyter", specifier = ">=1.1.1" },
+    { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "ruff", specifier = ">=0.9.5" },
     { name = "seaborn", specifier = ">=0.13.2" },
 ]
