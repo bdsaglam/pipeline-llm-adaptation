@@ -1,26 +1,30 @@
 [
     {
-      "name":"gawsy-paps",
-      "score":0.4608333333
+      "name":"mired-bats",
+      "rating":1510.3744248038
     },
     {
-      "name":"mired-bats",
-      "score":0.46
+      "name":"gawsy-paps",
+      "rating":1507.8314373861
     },
     {
       "name":"spicy-teff",
-      "score":0.452
+      "rating":1505.1861773281
     },
     {
       "name":"moral-prof",
-      "score":0.441875
+      "rating":1502.319413953
+    },
+    {
+      "name":"reference",
+      "rating":1498.7207953635
     },
     {
       "name":"lathy-jaws",
-      "score":0.4258333333
+      "rating":1498.3752675585
     },
     {
       "name":"sonic-doll",
-      "score":0.253
+      "rating":1477.192483607
     }
   ]

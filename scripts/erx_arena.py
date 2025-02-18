@@ -231,10 +231,36 @@ def compare(
         compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample, force=force)
 
 
+def expected_score(rating_a, rating_b):
+    """Compute the probability model A wins over model B."""
+    return 1 / (1 + 10 ** ((rating_b - rating_a) / 400))
+
+
+def update_elo(rating_a, rating_b, outcome_a, k=32):
+    """
+    Update Elo ratings for a match between two models.
+
+    rating_a, rating_b: current ratings of the two models.
+    outcome_a: actual outcome for model A:
+        1   => model A wins,
+        0   => model B wins,
+        0.5 => draw.
+    k: the step size factor.
+
+    Returns the new ratings for both models.
+    """
+    exp_a = expected_score(rating_a, rating_b)
+    new_rating_a = rating_a + k * (outcome_a - exp_a)
+    new_rating_b = rating_b + k * ((1 - outcome_a) - (1 - exp_a))
+    return new_rating_a, new_rating_b
+
+
 @app.command()
 def leaderboard(
     comparisons_dir: str = typer.Argument(..., help="Directory containing comparison results"),
     out: str = typer.Option("leaderboard.csv", help="Output file for leaderboard"),
+    k: float = typer.Option(32.0, help="K-factor for Elo rating updates"),
+    initial_rating: float = typer.Option(1500.0, help="Initial Elo rating for all models"),
 ):
     comparisons_dir = Path(comparisons_dir)
 
@@ -245,48 +271,51 @@ def leaderboard(
         with open(stats_file) as f:
             all_results.append(json.load(f))
 
-    # Build leaderboard
+    # Initialize Elo ratings
     all_models: Set[str] = set()
     for result in all_results:
         all_models.update([result["model_a"], result["model_b"]])
+    ratings = {model: initial_rating for model in all_models}
 
-    scores = {model: 0 for model in all_models}
-    total_samples = {model: 0 for model in all_models}
-
+    # Process each comparison and update ratings
     for result in all_results:
-        stats = result["stats"]
         model_a = result["model_a"]
         model_b = result["model_b"]
+        stats = result["stats"]
         sample_size = result["sample_size"]
 
-        # Handle A/B/DRAW format
+        if sample_size == 0:
+            continue
+
+        # Calculate win ratio for model A
         a_wins = stats.get("A", 0)
         b_wins = stats.get("B", 0)
         draws = stats.get("DRAW", 0)
 
-        # Add scores
-        scores[model_a] += a_wins
-        scores[model_b] += b_wins
-        # Each model gets 0.5 points for a draw
-        scores[model_a] += draws * 0.5
-        scores[model_b] += draws * 0.5
-
-        # Update total samples
-        total_samples[model_a] += sample_size
-        total_samples[model_b] += sample_size
-
-    # Calculate weighted average scores
-    weighted_scores = {
-        model: scores[model] / total_samples[model] if total_samples[model] > 0 else 0 for model in all_models
-    }
+        # Process each outcome type and update ratings
+        # For wins
+        if a_wins > 0:
+            ratings[model_a], ratings[model_b] = update_elo(
+                ratings[model_a], ratings[model_b], 1, k=k * (a_wins / sample_size)
+            )
+        # For losses
+        if b_wins > 0:
+            ratings[model_a], ratings[model_b] = update_elo(
+                ratings[model_a], ratings[model_b], 0, k=k * (b_wins / sample_size)
+            )
+        # For draws
+        if draws > 0:
+            ratings[model_a], ratings[model_b] = update_elo(
+                ratings[model_a], ratings[model_b], 0.5, k=k * (draws / sample_size)
+            )
 
     # Sort and save leaderboard
     out = Path(out)
     out.parent.mkdir(exist_ok=True, parents=True)
 
     leaderboard_df = pd.DataFrame(
-        sorted(weighted_scores.items(), key=lambda x: x[1], reverse=True),
-        columns=["name", "score"],
+        sorted(ratings.items(), key=lambda x: x[1], reverse=True),
+        columns=["name", "rating"],
     )
     leaderboard_df.to_csv(out, index=False)
     leaderboard_df.to_json(out.with_suffix(".json"), orient="records", indent=2)
