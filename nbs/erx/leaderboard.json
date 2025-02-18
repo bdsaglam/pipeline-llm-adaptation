@@ -1,22 +1,26 @@
 [
     {
-        "name": "mired-bats",
-        "score": 0.45625
+      "name":"gawsy-paps",
+      "score":0.4608333333
     },
     {
-        "name": "gawsy-paps",
-        "score": 0.41875
+      "name":"mired-bats",
+      "score":0.46
     },
     {
-        "name": "moral-prof",
-        "score": 0.415
+      "name":"spicy-teff",
+      "score":0.452
     },
     {
-        "name": "spicy-teff",
-        "score": 0.415
+      "name":"moral-prof",
+      "score":0.441875
     },
     {
-        "name": "lathy-jaws",
-        "score": 0.4025
+      "name":"lathy-jaws",
+      "score":0.4258333333
+    },
+    {
+      "name":"sonic-doll",
+      "score":0.253
     }
-]
+  ]

@@ -289,7 +289,7 @@ def leaderboard(
         columns=["name", "score"],
     )
     leaderboard_df.to_csv(out, index=False)
-    leaderboard_df.to_json(out.with_suffix(".json"), orient="records")
+    leaderboard_df.to_json(out.with_suffix(".json"), orient="records", indent=2)
 
 
 if __name__ == "__main__":
