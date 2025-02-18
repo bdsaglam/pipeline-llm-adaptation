@@ -222,7 +222,7 @@ def compare(
     out.mkdir(exist_ok=True)
 
     # Find all files matching the pattern
-    files = list(input_path.glob(pattern))
+    files = sorted(list(input_path.glob(pattern)))
     print(f"Found {len(files)} files matching pattern {pattern}")
 
     # Compare all pairs
