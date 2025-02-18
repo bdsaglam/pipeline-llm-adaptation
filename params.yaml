@@ -12,7 +12,7 @@ evaluation:
   dataset:
     path: bdsaglam/web_nlg-erx-concat
     name: release_v3.0_en
-    split: dev[:1000]
+    split: dev
 
 program:
   prompting: structured
