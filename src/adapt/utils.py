@@ -10,15 +10,15 @@ def set_seed(seed):
     random.seed(seed)
 
 
-def configure_lm(model, temperature):
-    lm = dspy.LM(
+def make_openai_lm(model, temperature: float = 0.0, cache=False, api_base=None, api_key=None, **kwargs):
+    return dspy.LM(
         "openai/" + model,
         temperature=temperature,
-        cache=False,
-        api_base=os.getenv("OPENAI_BASE_URL"),
-        api_key=os.getenv("OPENAI_API_KEY"),
+        cache=cache,
+        api_base=api_base or os.getenv("OPENAI_BASE_URL"),
+        api_key=api_key or os.getenv("OPENAI_API_KEY"),
+        **kwargs,
     )
-    dspy.configure(lm=lm)
 
 
 def dynamic_import(module, name):

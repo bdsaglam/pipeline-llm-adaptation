@@ -13,7 +13,7 @@ from dspy.evaluate import Evaluate
 from dspy.teleprompt.ensemble import Ensemble
 from rich.console import Console
 
-from adapt.utils import configure_lm, dynamic_import, set_seed
+from adapt.utils import dynamic_import, make_openai_lm, set_seed
 
 print = Console(stderr=True).print
 
@@ -57,7 +57,8 @@ def train_main(
     out.parent.mkdir(parents=True, exist_ok=True)
 
     # Set up LLM
-    configure_lm(model, temperature)
+    lm = make_openai_lm(model, temperature)
+    dspy.configure(lm=lm)
 
     # Get task-specific module
     task_module = get_task_module(task)
@@ -108,7 +109,8 @@ def evaluate_main(
     out.mkdir(parents=True, exist_ok=True)
 
     # Set up LLM
-    configure_lm(model, temperature)
+    lm = make_openai_lm(model, temperature)
+    dspy.configure(lm=lm)
 
     # Get task-specific module
     task_module = get_task_module(task)
