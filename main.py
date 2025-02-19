@@ -21,7 +21,8 @@ load_dotenv(override=True)
 
 set_seed(89)
 
-weave.init(project_name="llm-adapt")
+if os.getenv("WANDB_API_KEY"):
+    weave.init(project_name="llm-adapt")
 
 
 app = typer.Typer()
