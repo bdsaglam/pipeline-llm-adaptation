@@ -216,6 +216,7 @@ def compare(
     model: str = typer.Option("qwen-2.5-32b", "--model", "-m", help="Model to use"),
     temperature: float = typer.Option(0.3, "--temperature", "-t", help="Temperature for sampling"),
     force: bool = typer.Option(False, "--force", "-f", help="Force recomputation of existing comparisons"),
+    num_threads: int = typer.Option(4, "--threads", "-n", help="Number of parallel comparisons"),
 ):
     input_path = Path(input_path)
     out = Path(out)
@@ -225,10 +226,17 @@ def compare(
     files = sorted(list(input_path.glob(pattern)))
     print(f"Found {len(files)} files matching pattern {pattern}")
 
-    # Compare all pairs
-    for file_a, file_b in tqdm(list(itertools.combinations(files, 2))):
+    # Get all pairs to compare
+    pairs = list(itertools.combinations(files, 2))
+    
+    def process_pair(pair):
+        file_a, file_b = pair
         print(f"\nComparing {file_a.stem} vs {file_b.stem}")
         compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample, force=force)
+    
+    # Compare all pairs in parallel
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        list(tqdm(executor.map(process_pair, pairs), total=len(pairs), desc="Processing pairs"))
 
 
 def expected_score(rating_a, rating_b):
