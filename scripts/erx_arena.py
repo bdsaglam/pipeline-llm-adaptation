@@ -177,6 +177,8 @@ def compare_pair(
         print(f"Comparison between {exp_A} and {exp_B} with {model} (temp={temperature}) already exists. Skipping...")
         return
 
+    print(f"\nComparing {exp_A} vs {exp_B}")
+
     # Load the dataframes
     df_a = pd.read_json(file_a, lines=True)
     df_b = pd.read_json(file_b, lines=True)
@@ -231,7 +233,6 @@ def compare(
     
     def process_pair(pair):
         file_a, file_b = pair
-        print(f"\nComparing {file_a.stem} vs {file_b.stem}")
         compare_pair(file_a, file_b, out, model=model, temperature=temperature, sample=sample, force=force)
     
     # Compare all pairs in parallel
