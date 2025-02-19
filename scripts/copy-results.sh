@@ -10,7 +10,6 @@ get_results() {
     dvc checkout
 }
 
-exp_names=($@)
-for exp_name in "${exp_names[@]}"; do
+for exp_name in "$@"; do
     get_results "$exp_name"
 done
