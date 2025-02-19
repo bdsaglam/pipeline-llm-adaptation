@@ -17,7 +17,7 @@ from adapt.utils import configure_lm, dynamic_import, set_seed
 
 print = Console(stderr=True).print
 
-load_dotenv()
+load_dotenv(override=True)
 
 set_seed(89)
 
