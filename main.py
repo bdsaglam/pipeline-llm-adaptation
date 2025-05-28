@@ -3,6 +3,7 @@ import json
 import os
 from copy import deepcopy
 from pathlib import Path
+import re
 from typing import Callable
 
 import dspy
@@ -27,6 +28,10 @@ if os.getenv("WANDB_API_KEY"):
 
 app = typer.Typer()
 
+if re.findall("localhost|127.0.0.1|0.0.0.0", os.getenv("OPENAI_BASE_URL", "")):
+    from adapt.dspy.tgi_json_adapter import TGIJSONAdapter
+
+    dspy.settings.adapter = TGIJSONAdapter()
 
 def get_task_module(task_name: str):
     """Dynamically import task-specific module."""
